@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>TurboTrade · Sinais (nuvem)</title>
+<style>
+html,body{margin:0;background:#0a0a0a;color:#e8e8e8;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{min-height:100vh;min-height:100dvh}
+#hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #1c1c1c;position:sticky;top:0;background:#0a0a0a;z-index:20}
+#hdr small{display:block;font-size:11px;color:#8b93a7;text-align:right}#hdr b{font-size:15px;display:block;text-align:right}#conn{font-size:12px;max-width:55%}
+.sg{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))!important;max-width:560px;margin:0 auto}
+#lg{position:fixed;inset:0;background:#0a0a0a;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+#lg>div{width:100%;max-width:340px}#lg input{width:100%;background:#1b1b1b;border:1px solid #2c2c2c;border-radius:9px;padding:13px;color:#fff;font-size:16px;margin:10px 0}
+#lg h3{margin:0 0 4px}#lg-e{color:#ef4444;font-size:12px;min-height:16px}
+.sg{background:#0a0a0a;color:#e8e8e8;padding:10px;font-size:13px}
+.sg *{box-sizing:border-box}
+.sg-row{display:flex;gap:8px;position:relative}
+.sg-sel{flex:1;background:#1b1b1b;border:1px solid #2c2c2c;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:600;letter-spacing:.04em;display:flex;justify-content:space-between;align-items:center;color:#ddd}
+.sg-menu{position:absolute;top:44px;right:0;z-index:30;width:62%;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:6px;display:none;box-shadow:0 8px 24px #000}
+.sg-menu.l{left:0;right:auto;width:48%}
+.sg-menu h6{font-size:9px;letter-spacing:.14em;color:#888;padding:6px 8px}
+.sg-opt{padding:9px 10px;border-radius:7px;display:flex;justify-content:space-between;align-items:center}
+.sg-opt b{display:block;font-size:12px}.sg-opt small{color:#888;font-size:10px}
+.sg-opt.on{background:#2a2a2a}.sg-opt.on:after{content:"✓";color:#22c55e}
+.sg-next{margin:10px 0;background:#141414;border:1px solid #232323;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+.sg-next .t{flex:1;font-size:11px;font-weight:700}.sg-next .t small{display:block;color:#666;font-weight:400;font-size:9px;margin-top:2px}
+.sg-ring{position:relative;width:52px;height:52px}
+.sg-ring svg{transform:rotate(-90deg)}.sg-ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300}
+.sg-pill{background:#12301f;border:1px solid #1f5a39;color:#22c55e;border-radius:12px;padding:7px 12px;font-size:12px;font-family:monospace}
+.sg-pill.neg{background:#301212;border-color:#5a1f1f;color:#ef4444}
+.sg-help{width:30px;height:30px;border-radius:50%;background:#262626;color:#bbb;display:flex;align-items:center;justify-content:center;font-weight:700}
+#sg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:150px}
+.sg-wait{grid-column:1/3;text-align:center;color:#777;padding:34px 0;font-size:13px}.sg-wait i{font-size:34px;display:block;margin-bottom:8px;opacity:.6}
+.sg-card{position:relative;height:132px;border-radius:16px;overflow:hidden;padding:14px 10px;text-align:center;border:1px solid var(--c);background:repeating-linear-gradient(115deg,color-mix(in srgb,var(--c) 18%,#050505) 0 7px,#070707 7px 15px);box-shadow:0 0 14px color-mix(in srgb,var(--c) 30%,transparent);animation:sgin .35s ease-out}
+.sg-card .m{font-size:11px;color:#aaa;display:flex;align-items:center;justify-content:center;gap:6px}.sg-card .m:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.sg-card .lb{font-size:19px;margin:16px 0 8px;color:#f1f1f1}.sg-card .pg{font-size:11px;color:#9a9a9a}
+.sg-card .bt{margin-top:10px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--c)}
+.sg-card[data-st=win] .bt{color:#22c55e}.sg-card[data-st=loss] .bt{color:#ef4444}.sg-card[data-st=err] .bt{color:#f59e0b}.sg-card[data-st=buy] .bt{color:#facc15}.sg-card.done{opacity:.7}.sg-card.done .bt{color:#777}
+.sg-card[data-st=v] .bt{color:#60a5fa}.sg-card[data-st=vwin] .bt{color:#22c55e}.sg-card[data-st=vloss] .bt{color:#ef4444}
+.sg-btn.on-d{background:#12301f;border-color:#1f5a39;color:#22c55e}.sg-btn.on-r{background:#301212;border-color:#5a1f1f;color:#ef4444}
+.sg-vs{font-size:11px;color:#9ca3af;margin-top:10px;padding:8px 10px;border-radius:8px;background:#0f1520;line-height:1.4}.sg-vs.rl{color:#facc15;background:#231e0b}
+@keyframes sgin{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.sg-box{background:#141414;border:1px solid #232323;border-radius:12px;padding:12px;margin-top:10px}
+.sg-h{font-size:10px;letter-spacing:.12em;color:#888;font-weight:700;margin:14px 0 6px}
+.sg-lp{text-align:center}.sg-lp small{font-size:10px;letter-spacing:.15em;color:#999}.sg-lp div{font-size:21px;font-weight:600;color:#22c55e;margin-top:4px}
+.sg-btn{width:100%;background:#1f1f1f;border:1px solid #2c2c2c;border-radius:9px;padding:11px;font-size:11px;font-weight:700;letter-spacing:.06em;color:#ddd;text-align:center}
+.sg-btn.y{background:#2a2410;border-color:#5b4a12;color:#facc15}
+.sg-num{display:flex;align-items:center;gap:6px}.sg-num button{width:36px;height:34px;border-radius:8px;background:#262626;color:#fff;font-size:18px}
+.sg-num input{flex:1;min-width:0;background:transparent;border:0;text-align:center;color:#fff;font-size:14px;outline:0}
+.sg-tg{display:flex;justify-content:space-between;align-items:center;padding:13px;border-radius:12px;border:1px solid #2c2c2c;margin-top:10px}
+.sg-tg.a{background:#231e0b;border-color:#4d3f10}.sg-tg.b{background:#0f1520}
+.sg-sw{width:48px;height:26px;border-radius:13px;background:#444;position:relative;transition:.2s}.sg-sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#ddd;transition:.2s}
+.sg-sw.on{background:#facc15}.sg-sw.on:after{left:25px;background:#fff}
+.sg-mod{position:fixed;inset:0;background:#000b;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
+.sg-mod>div{background:#181818;border:1px solid #333;border-radius:16px;width:100%;max-width:420px;max-height:86vh;overflow:auto;padding:16px}
+.sg-mod h4{font-weight:700;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between}
+.sg-li{display:flex;gap:10px;align-items:center;background:#1f1f1f;border-radius:9px;padding:10px;margin-top:8px;font-size:12px}
+.sg-li i{width:10px;height:10px;border-radius:50%}.sg-li p{color:#aaa;margin-left:auto}
+.sg-toast{position:fixed;left:12px;bottom:14px;z-index:70;background:#1b1b1b;border:1px solid #facc15;color:#eee;padding:9px 13px;border-radius:10px;font-size:12px;display:none}
+
+</style></head><body>
+<div id="hdr"><div id="conn">Conectando...</div><div><b id="bal">--</b><small id="acc">Conta</small></div></div>
+<div class="sg"><div class="sg-row" style="margin-bottom:10px"><div class="sg-btn" id="ac-d" onclick="sgAcct('demo')">CONTA DEMO</div><div class="sg-btn" id="ac-r" onclick="sgAcct('real')">CONTA REAL</div></div>
+  <div class="sg-row">
+   <div class="sg-sel" id="sg-tb" onclick="sgMenu('t')"><span id="sg-tl">DÍGITOS</span><span>⌄</span></div>
+   <div class="sg-sel" id="sg-pb" onclick="sgMenu('p')"><span id="sg-pl">AGRESSIVO</span><span>⌄</span></div>
+   <div class="sg-menu l" id="sg-mt"><h6>TIPO DE SINAL</h6><div class="sg-opt" data-k="DIGIT" onclick="sgSet('type','DIGIT')"><b>Dígitos</b></div><div class="sg-opt" data-k="BOTH" onclick="sgSet('type','BOTH')"><b>Ticks + Dígitos</b></div><div class="sg-opt" data-k="TICK" onclick="sgSet('type','TICK')"><b>Ticks</b></div></div>
+   <div class="sg-menu" id="sg-mp"><h6>SELECIONE O PERFIL DE RISCO</h6>
+    <div class="sg-opt" data-k="aggressive" onclick="sgSet('prof','aggressive')"><div><b>Agressivo</b><small>Min 50%</small></div></div>
+    <div class="sg-opt" data-k="balanced" onclick="sgSet('prof','balanced')"><div><b>Equilibrado</b><small>Min 70%</small></div></div>
+    <div class="sg-opt" data-k="safe" onclick="sgSet('prof','safe')"><div><b>Seguro</b><small>Min 85%</small></div></div>
+    <div class="sg-opt" data-k="max" onclick="sgSet('prof','max')"><div><b>Máximo</b><small>Min 90%</small></div></div></div>
+  </div>
+  <div class="sg-next"><div class="t">Próximos Sinais<small>Próximos sinais em:</small></div>
+   <div class="sg-ring"><svg width="52" height="52"><circle cx="26" cy="26" r="23" fill="none" stroke="#2a2a2a" stroke-width="2"/><circle id="sg-arc" cx="26" cy="26" r="23" fill="none" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-dasharray="144.5" stroke-dashoffset="0"/></svg><span id="sg-t">20</span></div>
+   <div class="sg-pill" id="sg-pp">+0.00</div><div class="sg-help" onclick="sgModal('sg-hm',1)">?</div></div>
+  <div id="sg-grid"></div>
+  <div class="sg-box sg-lp"><small>LUCRO DA SESSÃO</small><div id="sg-lp">Ð0.00</div></div>
+  <div class="sg-box" style="margin-top:10px"><div class="sg-h" style="margin:0 0 8px" id="st-t">ACERTOS</div>
+   <div style="display:flex;justify-content:space-between;font-size:14px"><span>Reais</span><b id="st-r">0/0 · --</b></div>
+   <div style="display:flex;justify-content:space-between;font-size:14px;margin-top:6px"><span>Virtuais</span><b id="st-v">0/0 · --</b></div>
+   <div class="sg-btn" style="margin-top:10px" onclick="sgZeroSt()">ZERAR CONTADOR</div></div>
+  <div class="sg-btn" style="margin-top:10px" onclick="sgZero()">LIMPAR SESSÃO (LUCRO E OPERAÇÕES)</div>
+  <div id="sg-hist" class="sg-box" style="display:none"></div>
+  <div class="sg-btn" style="margin-top:10px" onclick="sgModal('sg-mm',1);sgMk()">▮ MERCADOS</div>
+  <div class="sg-h">GERENCIAMENTO DE ENTRADA</div>
+  <div class="sg-box sg-num" style="margin:0"><button onclick="sgStep('base',-.5)">−</button><input id="sg-st" inputmode="decimal" onchange="sgIn('base',this.value)"><button onclick="sgStep('base',.5)">+</button></div>
+  <div class="sg-row" style="margin-top:8px"><div class="sg-btn" onclick="sgReset()">↻ RESETAR</div><div class="sg-btn y" onclick="sgMul()" id="sg-x">X2.1</div></div>
+  <div class="sg-h">GERENCIAMENTO DE RISCO</div>
+  <div class="sg-box" style="margin:0"><div class="sg-row" style="align-items:center;justify-content:space-between"><span>Martingale</span><div class="sg-num" style="width:150px"><button onclick="sgStep('mart',-.1)">−</button><input id="sg-mr" inputmode="decimal" onchange="sgIn('mart',this.value)"><button onclick="sgStep('mart',.1)">+</button></div></div>
+   <div class="sg-row" style="align-items:center;justify-content:space-between;margin-top:8px"><span>Stop Loss</span><div class="sg-num" style="width:150px"><button onclick="sgStep('stop',-10)">−</button><input id="sg-sl" inputmode="decimal" onchange="sgIn('stop',this.value)"><button onclick="sgStep('stop',10)">+</button></div></div></div>
+  <div class="sg-h">LIMITE DE MARTINGALE</div>
+  <div class="sg-box" style="margin:0"><div class="sg-row" style="align-items:center;justify-content:space-between" onclick="sgTog('mOn')"><span>Limitar perdas seguidas</span><div class="sg-sw" id="sg-mo"></div></div>
+   <div class="sg-row" style="align-items:center;justify-content:space-between;margin-top:10px"><span>Perdas seguidas (X)</span><div class="sg-num" style="width:150px"><button onclick="sgStep('mN',-1)">−</button><input id="sg-mn" inputmode="numeric" onchange="sgIn('mN',this.value)"><button onclick="sgStep('mN',1)">+</button></div></div>
+   <div class="sg-vs" id="sg-ms"></div></div>
+  <div class="sg-h">LOSS VIRTUAL</div>
+  <div class="sg-box" style="margin:0"><div class="sg-row" style="align-items:center;justify-content:space-between" onclick="sgTog('vOn')"><span>Loss virtual</span><div class="sg-sw" id="sg-vo"></div></div>
+   <div class="sg-row" style="align-items:center;justify-content:space-between;margin-top:10px"><span>Perdas virtuais (N)</span><div class="sg-num" style="width:150px"><button onclick="sgStep('vN',-1)">−</button><input id="sg-vn" inputmode="numeric" onchange="sgIn('vN',this.value)"><button onclick="sgStep('vN',1)">+</button></div></div>
+   <div class="sg-vs" id="sg-vs"></div></div>
+  <div class="sg-h">CICLO DO AUTO-TRADE</div>
+  <div class="sg-box" style="margin:0"><div class="sg-row" style="align-items:center;justify-content:space-between" onclick="sgTog('gOn')"><span>Limitar gale por ciclo</span><div class="sg-sw" id="sg-go"></div></div>
+   <div class="sg-row" style="align-items:center;justify-content:space-between;margin-top:10px"><span>Gales por ciclo (X)</span><div class="sg-num" style="width:150px"><button onclick="sgStep('gN',-1)">−</button><input id="sg-gn" inputmode="numeric" onchange="sgIn('gN',this.value)"><button onclick="sgStep('gN',1)">+</button></div></div>
+   <div class="sg-vs" id="sg-cs"></div></div>
+  <div class="sg-tg a" onclick="sgTog('autoMul')"><span>Auto multiplicar</span><div class="sg-sw" id="sg-am"></div></div>
+  <div class="sg-tg b" onclick="sgTog('auto')"><span>Auto-Trade</span><div class="sg-sw" id="sg-au"></div></div>
+ </div>
+ <div class="sg-mod" id="sg-mm" onclick="if(event.target===this)sgModal('sg-mm',0)"><div><h4>Mercados <span onclick="sgModal('sg-mm',0)">✕</span></h4><div class="sg-btn" onclick="sgAll()">Selecionar / limpar todos</div><div id="sg-mk"></div></div></div>
+ <div class="sg-mod" id="sg-hm" onclick="if(event.target===this)sgModal('sg-hm',0)"><div><h4>Como Funcionam os Sinais <span onclick="sgModal('sg-hm',0)">✕</span></h4>
+  <b style="font-size:12px">Temporizador</b><p style="color:#aaa;font-size:12px;margin:4px 0 12px">Os sinais são gerados a cada 20 segundos e ficam visíveis por 18 s. O temporizador mostra quanto tempo falta para a próxima rodada de sinais.</p>
+  <b style="font-size:12px">Níveis de Sinais</b>
+  <div class="sg-li"><i style="background:#fff"></i>Branco<p>Básico</p></div><div class="sg-li"><i style="background:#3b82f6"></i>Azul<p>Moderado</p></div><div class="sg-li"><i style="background:#f5b301"></i>Ouro<p>Alto</p></div><div class="sg-li"><i style="background:#22c55e"></i>Verde<p>Máximo</p></div>
+  <b style="font-size:12px;display:block;margin-top:14px">Painel de Trading</b>
+  <div class="sg-li"><div><b>GERENCIAMENTO DE ENTRADA</b><br><span style="color:#aaa">Defina o valor da sua entrada.</span></div></div>
+  <div class="sg-li"><div><b>RESETAR</b><br><span style="color:#aaa">Volta a entrada para o valor inicial.</span></div></div>
+  <div class="sg-li"><div><b>Multiplicar</b><br><span style="color:#aaa">Multiplica a entrada pelo fator Martingale.</span></div></div>
+  <div class="sg-li"><div><b>Auto multiplicar</b><br><span style="color:#aaa">Multiplica automaticamente após perdas.</span></div></div>
+  <div class="sg-li"><div><b>Auto-Trade</b><br><span style="color:#aaa">Repete operações automaticamente até ganhar.</span></div></div>
+  <div class="sg-li"><div><b>Stop Loss</b><br><span style="color:#aaa">Limite de perda para parar operações.</span></div></div>
+  <div class="sg-btn y" style="margin-top:14px" onclick="sgModal('sg-hm',0)">ENTENDI</div></div></div>
+ <div class="sg-toast" id="sg-toast"></div>
+
+<div id="lg"><div><h3>TurboTrade · Sinais</h3><div style="color:#888;font-size:12px">Painel na nuvem</div><input id="lg-s" type="password" placeholder="Senha do painel" onkeydown="if(event.key==='Enter')doLogin()"><div class="sg-btn y" onclick="doLogin()">ENTRAR</div><div id="lg-e"></div></div></div>
+<script>
+let S=null,TOK=localStorage.getItem('tt_tok')||'',busy=false;
+const $s=id=>document.getElementById(id);
+const f=v=>String(v).replace('.',',');
+async function call(path,body){
+ const r=await fetch(path,{method:body?'POST':'GET',headers:{'content-type':'application/json','x-token':TOK},body:body?JSON.stringify(body):undefined});
+ if(r.status===401&&path!=='/api/login'){showLogin();throw new Error('login')}
+ return r.json()}
+function showLogin(){$s('lg').style.display='flex'}
+async function doLogin(){
+ const e=$s('lg-e');e.textContent='';
+ try{const r=await fetch('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({senha:$s('lg-s').value})});
+  const j=await r.json();if(!r.ok){e.textContent=j.error||'Erro';return}
+  TOK=j.token;localStorage.setItem('tt_tok',TOK);$s('lg').style.display='none';$s('lg-s').value='';poll()}catch(x){e.textContent='Falha de rede'}}
+async function act(b){try{S=await call('/api/do',b);render()}catch(e){}}
+async function poll(){if(busy)return;busy=true;try{S=await call('/api/state');render()}catch(e){}busy=false}
+setInterval(poll,1000);poll();
+/* ações (mesmos nomes do site) */
+function sgMenu(w){const a=$s('sg-m'+w),o=a.style.display==='block';$s('sg-mt').style.display='none';$s('sg-mp').style.display='none';a.style.display=o?'none':'block'}
+function sgSet(k,v){$s('sg-mt').style.display='none';$s('sg-mp').style.display='none';act({a:'set',k,v})}
+function sgTog(k){act({a:'tog',k})}
+function sgIn(k,v){act({a:'in',k,v})}
+function sgStep(k,d){act({a:'step',k,d})}
+function sgReset(){act({a:'reset'})}
+function sgMul(){act({a:'mul'})}
+function sgManual(id){act({a:'manual',id})}
+function sgSym(s){act({a:'sym',s})}
+function sgAll(){act({a:'all'})}
+function sgAcct(v){if(!S||S.conn.want===v)return;if(v==='real'){if(!confirm('Trocar para a conta REAL? As operações usarão dinheiro de verdade. O Auto-Trade será desligado e o lucro da sessão zerado.'))return;act({a:'acct',v,ok:true})}else{if(!confirm('Trocar para a conta DEMO? O Auto-Trade será desligado.'))return;act({a:'acct',v})}}
+function sgZeroSt(){if(confirm('Zerar o contador de acertos desta conta?'))act({a:'zeroStats'})}
+function sgZero(){if(confirm('Limpar a sessão? O lucro/perda e a lista de operações serão zerados.'))act({a:'zero'})}
+function sgModal(id,on){$s(id).style.display=on?'flex':'none'}
+function sgMk(){if(!S)return;$s('sg-mk').innerHTML=S.symbols.map(s=>`<div class="sg-li" onclick="sgSym('${s.symbol}')"><div class="sg-sw ${S.cfg.syms[s.symbol]?'on':''}" style="transform:scale(.7)"></div>${s.name}</div>`).join('')}
+const TC={white:'#e5e7eb',blue:'#3b82f6',gold:'#f5b301',green:'#22c55e'};
+const T={buy:'ENTRANDO…',q:'NA FILA',err:'ERRO',v:'VIRTUAL…',vwin:'V-WIN',vloss:'V-LOSS'};
+function setv(id,v){const e=$s(id);if(e&&document.activeElement!==e)e.value=v}
+let lastGrid='',lastHist='';
+function render(){
+ if(!S)return;const c=S.cfg,k=S.conn;
+ const st=$s('conn');st.textContent=k.ok?'Conectado':(k.err?'Desconectado · '+k.err:'Conectando...');st.style.color=k.ok?'#22c55e':'#ef4444';
+ $s('bal').textContent=k.ok||k.acc?(k.currency+' '+Number(k.balance).toFixed(2)):'--';
+ $s('acc').textContent=k.acc?((k.acc.type==='demo'?'DEMO · ':'REAL · ')+k.acc.id):(k.want==='real'?'REAL':'DEMO');
+ $s('acc').style.color=(k.acc?k.acc.type:k.want)==='real'?'#f59e0b':'#8b93a7';
+ $s('ac-d').classList.toggle('on-d',k.want==='demo');$s('ac-r').classList.toggle('on-r',k.want==='real');
+ $s('sg-tl').textContent=c.type==='DIGIT'?'DÍGITOS':c.type==='BOTH'?'TICKS + DÍGITOS':'TICKS';
+ $s('sg-pl').textContent={aggressive:'AGRESSIVO',balanced:'EQUILIBRADO',safe:'SEGURO',max:'MÁXIMO'}[c.prof]||'AGRESSIVO';
+ document.querySelectorAll('#sg-mt .sg-opt,#sg-mp .sg-opt').forEach(e=>e.classList.toggle('on',e.dataset.k===c.type||e.dataset.k===c.prof));
+ setv('sg-st',f(c.stake));setv('sg-mr',f(c.mart));setv('sg-sl',c.stop);setv('sg-vn',c.vN);setv('sg-gn',c.gN);
+ $s('sg-x').textContent='X'+c.mart;
+ $s('sg-vo').classList.toggle('on',c.vOn);$s('sg-go').classList.toggle('on',c.gOn);$s('sg-mo').classList.toggle('on',c.mOn);setv('sg-mn',c.mN);const ms=$s('sg-ms');ms.textContent=c.mOn?'Perdas seguidas: '+S.mL+'/'+c.mN+' · ao chegar em '+c.mN+' a entrada volta ao valor inicial.':'Desligado: o martingale segue sem limite de perdas seguidas.';
+ const pc=(w,l)=>(w+l)?Math.round(w*100/(w+l))+'%':'--';const ss=S.stats||{rw:0,rl:0,vw:0,vl:0};
+ $s('st-t').textContent='ACERTOS · CONTA '+(k.want==='real'?'REAL':'DEMO');$s('st-r').textContent=ss.rw+'/'+(ss.rw+ss.rl)+' · '+pc(ss.rw,ss.rl);$s('st-v').textContent=ss.vw+'/'+(ss.vw+ss.vl)+' · '+pc(ss.vw,ss.vl);$s('sg-am').classList.toggle('on',c.autoMul);$s('sg-au').classList.toggle('on',c.auto);
+ const vs=$s('sg-vs');vs.classList.toggle('rl',c.vOn&&S.vReal);
+ vs.textContent=!c.vOn?'Desligado: todas as entradas são reais.':S.vReal?'Entrada REAL liberada · segue em real até ganhar (martingale normal).':'Loss virtual '+S.vc+'/'+c.vN+' · aguardando perdas virtuais para liberar a entrada real.';
+ const cs=$s('sg-cs');cs.classList.toggle('rl',!!S.cycStop);
+ cs.textContent=S.cycStop?'Ciclo encerrado · Auto-Trade aguarda o próximo ciclo de sinais.':'Auto-Trade: 1 ganho encerra o ciclo'+(c.gOn?' · máx. '+c.gN+' gale(s) por ciclo (perdas no ciclo: '+S.cycL+')':' · gale sem limite no ciclo')+'.';
+ $s('sg-t').textContent=String(S.remain).padStart(2,'0');$s('sg-arc').style.strokeDashoffset=144.5*(1-S.remain/20);
+ const p=S.pl,ptxt=(p>=0?'+':'')+p.toFixed(2);
+ $s('sg-lp').textContent='Ð'+p.toFixed(2);$s('sg-lp').style.color=p<0?'#ef4444':'#22c55e';$s('sg-pp').textContent=ptxt;$s('sg-pp').classList.toggle('neg',p<0);
+ const g=JSON.stringify(S.sigs);
+ if(g!==lastGrid){lastGrid=g;const el=$s('sg-grid');
+  el.innerHTML=!S.sigs.length?'<div class="sg-wait"><i>⏳</i>Aguardando sinais...</div>':S.sigs.map(s=>{
+   const bt=s.st==='win'?'WIN +'+s.res.toFixed(2):s.st==='loss'?'LOSS '+s.res.toFixed(2):T[s.st]||'COMPRAR';
+   return `<div class="sg-card ${s.bought&&s.res===undefined&&!s.v?'done':''}" data-st="${s.st}" style="--c:${TC[s.tier]}" onclick="sgManual(${s.id})"><div class="m">${s.name}</div><div class="lb">${s.label}</div><div class="pg">Pagamento ${String(s.payout).replace('.',',')}</div><div class="bt">${bt}</div></div>`}).join('')}
+ const hh=JSON.stringify(S.h);
+ if(hh!==lastHist){lastHist=hh;const h=$s('sg-hist');h.style.display=S.h.length?'block':'none';
+  h.innerHTML='<small style="font-size:10px;letter-spacing:.12em;color:#888">ÚLTIMAS OPERAÇÕES</small>'+S.h.slice(0,15).map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid #222;font-size:12px"><span style="color:#999">${r.t}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}</span><b style="color:${r.w?'#22c55e':'#ef4444'}">${r.w?'WIN +':'LOSS '}${r.p.toFixed(2)}</b></div>`).join('')}
+ const t=$s('sg-toast');if(S.msg&&S.msg.t&&S.now-S.msg.ts<6000){t.textContent=S.msg.t;t.style.display='block'}else t.style.display='none';
+ if($s('sg-mm').style.display==='flex')sgMk()}
+
+if(!TOK)showLogin();
+</script></body></html>
